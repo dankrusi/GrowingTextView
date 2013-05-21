@@ -96,12 +96,6 @@
     internalTextView.displayPlaceHolder = YES;
 }
 
-- (void)dealloc
-{
-    [internalTextView release]; internalTextView = nil;
-    [super dealloc];
-}
-
 -(CGSize)sizeThatFits:(CGSize)size
 {
     if (self.text.length == 0) {
@@ -337,6 +331,10 @@
     internalTextViewFrame.size.width = internalTextView.contentSize.width;
     
     internalTextView.frame = internalTextViewFrame;
+    
+    if(_footerView) {
+        _footerView.frame = CGRectMake(0,self.frame.size.height,self.frame.size.width,_footerView.frame.size.height);
+    }
 }
 
 -(void)growDidStop
@@ -511,6 +509,39 @@
 {
 	[internalTextView scrollRangeToVisible:range];
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+- (void)setFooterView:(UIView*)view {
+    _footerView = view;
+    [self addSubview:_footerView];
+    [self resizeTextView:self.frame.size.height];
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+-(void)setKeyboardType:(UIKeyboardType)val
+{
+	internalTextView.keyboardType = val;
+}
+
+-(UIKeyboardType)keyboardType
+{
+	return internalTextView.keyboardType;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+-(void)setKeyboardAppearance:(UIKeyboardAppearance)val
+{
+	internalTextView.keyboardAppearance = val;
+}
+
+-(UIKeyboardAppearance)keyboardAppearance
+{
+	return internalTextView.keyboardAppearance;
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////

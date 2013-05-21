@@ -96,6 +96,11 @@
 @property (nonatomic) UIReturnKeyType returnKeyType;
 @property (assign) UIEdgeInsets contentInset;
 @property(nonatomic) BOOL enablesReturnKeyAutomatically;
+@property(nonatomic) UIKeyboardType keyboardType;
+@property(nonatomic) UIKeyboardAppearance keyboardAppearance;
+
+//footer properties
+@property (nonatomic, strong) UIView *footerView;
 
 //uitextview methods
 //need others? use .internalTextView
