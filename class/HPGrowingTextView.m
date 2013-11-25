@@ -94,6 +94,8 @@
 
     [self setPlaceholderColor:[UIColor lightGrayColor]];
     internalTextView.displayPlaceHolder = YES;
+    
+    firstHeightChange = TRUE;
 }
 
 -(CGSize)sizeThatFits:(CGSize)size
@@ -112,6 +114,10 @@
 	r.origin.y = 0;
 	r.origin.x = contentInset.left;
     r.size.width -= contentInset.left + contentInset.right;
+    
+    if(_footerView) {
+        self.height = internalTextView.height + _footerView.height;
+    }
     
     internalTextView.frame = r;
 }
@@ -232,14 +238,17 @@
 }
 
 - (void)textViewDidChange:(UITextView *)textView
-{	
+{
+
+    
 	//size of content, so we can set the frame of self
 	NSInteger newSizeH = internalTextView.contentSize.height;
 	if(newSizeH < minHeight || !internalTextView.hasText) newSizeH = minHeight; //not smalles than minHeight
-  if (internalTextView.frame.size.height > maxHeight) newSizeH = maxHeight; // not taller than maxHeight
-
+    if (internalTextView.frame.size.height > maxHeight) newSizeH = maxHeight; // not taller than maxHeight
+    
 	if (internalTextView.frame.size.height != newSizeH)
 	{
+        
         // [fixed] Pasting too much text into the view failed to fire the height change, 
         // thanks to Gwynne <http://blog.darkrainfall.org/>
         
@@ -260,6 +269,9 @@
                                                  UIViewAnimationOptionBeginFromCurrentState)                                 
                                      animations:^(void) {
                                          [self resizeTextView:newSizeH];
+                                         if ([delegate respondsToSelector:@selector(growingTextView:willChangeHeightAnimated:)]) {
+                                             [delegate growingTextView:self willChangeHeightAnimated:newSizeH];
+                                         }
                                      } 
                                      completion:^(BOOL finished) {
                                          if ([delegate respondsToSelector:@selector(growingTextView:didChangeHeight:)]) {
@@ -275,6 +287,9 @@
                     [UIView setAnimationDidStopSelector:@selector(growDidStop)];
                     [UIView setAnimationBeginsFromCurrentState:YES];
                     [self resizeTextView:newSizeH];
+                    if ([delegate respondsToSelector:@selector(growingTextView:willChangeHeightAnimated:)]) {
+                        [delegate growingTextView:self willChangeHeightAnimated:newSizeH];
+                    }
                     [UIView commitAnimations];
                 }
             } else {
@@ -303,16 +318,21 @@
 			internalTextView.scrollEnabled = NO;
 		}
 		
-	}
+	} else {
+        
+        //TODO: How to change the model that this doesnt happen on every keystroke??
+        
+        // Display (or not) the placeholder string
+        [self refreshPlaceholder];
+        [self resizeTextView:newSizeH];
+        
+    }
 	
-    // Display (or not) the placeholder string
-    [self refreshPlaceholder];
     
     // Tell the delegate that the text view changed
-	
     if ([delegate respondsToSelector:@selector(growingTextViewDidChange:)]) {
-		[delegate growingTextViewDidChange:self];
-	}
+        [delegate growingTextViewDidChange:self];
+    }
 	
 }
 
@@ -324,17 +344,28 @@
     
     CGRect internalTextViewFrame = self.frame;
     internalTextViewFrame.size.height = newSizeH; // + padding
-    self.frame = internalTextViewFrame;
+    
+    if(_footerView) {
+        
+        self.frame = CGRectMake(internalTextViewFrame.origin.x,
+                                internalTextViewFrame.origin.y,
+                                internalTextViewFrame.size.width,
+                                internalTextViewFrame.size.height + _footerView.frame.size.height);
+        _footerView.frame = CGRectMake(0,
+                                       self.frame.size.height-_footerView.frame.size.height,
+                                       self.frame.size.width,
+                                       _footerView.frame.size.height);
+    
+    } else {
+        self.frame = internalTextViewFrame;
+    }
     
     internalTextViewFrame.origin.y = contentInset.top - contentInset.bottom;
     internalTextViewFrame.origin.x = contentInset.left;
     internalTextViewFrame.size.width = internalTextView.contentSize.width;
     
     internalTextView.frame = internalTextViewFrame;
-    
-    if(_footerView) {
-        _footerView.frame = CGRectMake(0,self.frame.size.height,self.frame.size.width,_footerView.frame.size.height);
-    }
+   
 }
 
 -(void)growDidStop

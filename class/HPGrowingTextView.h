@@ -43,6 +43,7 @@
 - (void)growingTextViewDidChange:(HPGrowingTextView *)growingTextView;
 
 - (void)growingTextView:(HPGrowingTextView *)growingTextView willChangeHeight:(float)height;
+- (void)growingTextView:(HPGrowingTextView *)growingTextView willChangeHeightAnimated:(float)height;
 - (void)growingTextView:(HPGrowingTextView *)growingTextView didChangeHeight:(float)height;
 
 - (void)growingTextViewDidChangeSelection:(HPGrowingTextView *)growingTextView;
@@ -71,6 +72,8 @@
 	UIReturnKeyType returnKeyType;
     
     UIEdgeInsets contentInset;
+    
+    BOOL firstHeightChange;
 }
 
 //real class properties
